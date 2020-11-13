@@ -1,0 +1,6 @@
+version: 1
+push:
+
+  - screwdriver:6188
+  - screwdriver:6188pr
+
