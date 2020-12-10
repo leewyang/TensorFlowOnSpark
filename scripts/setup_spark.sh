@@ -4,10 +4,10 @@
 # But Travis' xenial build env uses JDK11, while Spark requires JDK8
 
 # Install JDK8
-sudo add-apt-repository -y ppa:openjdk-r/ppa
-sudo apt-get update
-sudo apt-get install -y openjdk-8-jdk --no-install-recommends
-sudo update-java-alternatives -s java-1.8.0-openjdk-amd64
+add-apt-repository -y ppa:openjdk-r/ppa
+apt-get update
+apt-get install -y openjdk-8-jdk --no-install-recommends
+update-java-alternatives -s java-1.8.0-openjdk-amd64
 export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 
 # Install Spark
