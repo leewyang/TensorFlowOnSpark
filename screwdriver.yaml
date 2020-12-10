@@ -10,7 +10,11 @@ jobs:
   validate_test:
     template: python/validate_unittest
     requires: [~commit, ~pr]
-
+    steps:
+      - postinstall_dependencies: |
+          source scripts/setup_spark.sh
+      - postend: |
+          scripts/teardown_spark.sh
   validate_lint:
     template: python/validate_lint
     requires: [~commit, ~pr]
