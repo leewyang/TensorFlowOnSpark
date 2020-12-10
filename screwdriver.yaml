@@ -11,9 +11,9 @@ jobs:
     template: python/validate_unittest
     requires: [~commit, ~pr]
     steps:
-      - postinstall_dependencies: |
+      - prevalidate_code: |
           source scripts/setup_spark.sh
-      - postend: |
+      - postvalidate_code: |
           scripts/teardown_spark.sh
   validate_lint:
     template: python/validate_lint
