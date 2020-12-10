@@ -5,6 +5,7 @@ version: 4
 shared:
   environment:
     PACKAGE_DIRECTORY: tensorflowonspark
+    TOX_ENVLIST: py37
 
 jobs:
   validate_test:
