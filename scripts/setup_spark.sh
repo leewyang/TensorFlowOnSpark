@@ -2,8 +2,10 @@
 
 # TensorFlow 2.0.0 is tested/supported on Ubuntu 16 (xenial) or later
 # But Travis' xenial build env uses JDK11, while Spark requires JDK8
+lsb_release -d
 
 # Install JDK8
+apt-get install software-properties-common
 add-apt-repository -y ppa:openjdk-r/ppa
 apt-get update
 apt-get install -y openjdk-8-jdk --no-install-recommends
