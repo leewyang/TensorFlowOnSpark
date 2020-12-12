@@ -13,9 +13,7 @@ jobs:
     requires: [~commit, ~pr]
     steps:
       - prevalidate_code: |
-          source scripts/setup_spark.sh
-      - postvalidate_code: |
-          scripts/teardown_spark.sh
+          source scripts/install_spark.sh
   validate_lint:
     template: python/validate_lint
     requires: [~commit, ~pr]
