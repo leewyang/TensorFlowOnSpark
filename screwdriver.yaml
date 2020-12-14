@@ -5,6 +5,7 @@ version: 4
 shared:
   environment:
     PACKAGE_DIRECTORY: tensorflowonspark
+    TOX_ARGS: '--verbose'
     TOX_ENVLIST: py37
 
 jobs:
