@@ -5,7 +5,7 @@ version: 4
 shared:
   environment:
     PACKAGE_DIRECTORY: tensorflowonspark
-    SPARK_HOME: ${SD_ROOT_DIR}
+    SPARK_HOME: ${SD_ROOT_DIR}/spark
     TOX_ARGS: '--verbose'
     TOX_ENVLIST: py37
 
