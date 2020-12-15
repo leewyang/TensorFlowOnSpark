@@ -8,6 +8,9 @@ shared:
     SPARK_HOME: ${SD_ROOT_DIR}/spark
     TOX_ARGS: '--verbose'
     TOX_ENVLIST: py37
+  annotations:
+    screwdriver.cd/cpu: HIGH
+    screwdriver.cd/ram: HIGH
 
 jobs:
   validate_test:
