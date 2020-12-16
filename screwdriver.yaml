@@ -35,16 +35,16 @@ jobs:
 #    template: python/validate_security
 #    requires: [~commit, ~pr]
 
-  generate_version:
-    template: python/generate_version
-    requires: [~commit]
+#  generate_version:
+#    template: python/generate_version
+#    requires: [~commit]
 
   publish_test_pypi:
     template: python/package_python
     environment:
-      PUBLISH: True
+      PUBLISH: False
       TWINE_REPOSITORY_URL: https://test.pypi.org/legacy/
-    requires: [validate_test, validate_lint, validate_codestyle, validate_safetydb, generate_version]
+    requires: [validate_test, validate_lint, validate_codestyle, validate_safetydb]
 #    requires: [validate_test, validate_lint, validate_codestyle, validate_safetydb, validate_security,  generate_version]
 
   verify_test_package:
