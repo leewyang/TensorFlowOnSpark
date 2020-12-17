@@ -107,7 +107,8 @@ class Server(MessageSocket):
   done = False                    #: boolean indicating if server should be shutdown.
 
   def __init__(self, count):
-    assert count > 0, "Expected number of reservations should be greater than zero"
+    if count <= 0:
+      raise ValueError("Expected number of reservations should be greater than zero")
     self.reservations = Reservations(count)
 
   def await_reservations(self, sc, status={}, timeout=600):

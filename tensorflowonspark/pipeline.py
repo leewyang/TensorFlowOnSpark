@@ -119,7 +119,7 @@ class HasInputMode(Params):
 
   def setInputMode(self, value):
     if value == TFCluster.InputMode.TENSORFLOW:
-      raise Exception("InputMode.TENSORFLOW is deprecated")
+      raise ValueError("InputMode.TENSORFLOW is deprecated for TFEstimator")
 
     return self._set(input_mode=value)
 
@@ -416,7 +416,8 @@ class TFEstimator(Estimator, TFParams, HasInputMapping,
     if self.export_fn:
       if version.parse(TF_VERSION) < version.parse("2.0.0"):
         # For TF1.x, run export function, if provided
-        assert local_args.export_dir, "Export function requires --export_dir to be set"
+        if not local_args.export_dir:
+          raise ValueError("Export function requires --export_dir to be set")
         logging.info("Exporting saved_model (via export_fn) to: {}".format(local_args.export_dir))
 
         def _export(iterator, fn, args):
@@ -518,7 +519,8 @@ def _run_model_tf1(iterator, args, tf_args):
 
   # if using a signature_def_key, get input/output tensor info from the requested signature
   if version.parse(TF_VERSION) < version.parse("2.0.0") and args.signature_def_key:
-    assert args.export_dir, "Inferencing with signature_def_key requires --export_dir argument"
+    if not args.export_dir:
+      raise ValueError("Inferencing with signature_def_key requires --export_dir argument")
     logging.info("===== loading meta_graph_def for tag_set ({0}) from saved_model: {1}".format(args.tag_set, args.export_dir))
     meta_graph_def = get_meta_graph_def(args.export_dir, args.tag_set)
     signature = meta_graph_def.signature_def[args.signature_def_key]
@@ -539,19 +541,21 @@ def _run_model_tf1(iterator, args, tf_args):
     tf.reset_default_graph()
     sess = tf.Session(graph=tf.get_default_graph())
     if args.export_dir:
-      assert args.tag_set, "Inferencing from a saved_model requires --tag_set"
+      if not args.tag_set:
+        raise ValueError("Inferencing from a saved_model requires --tag_set")
       # load graph from a saved_model
       logging.info("===== restoring from saved_model: {}".format(args.export_dir))
       loader.load(sess, args.tag_set.split(','), args.export_dir)
     elif args.model_dir:
       # load graph from a checkpoint
       ckpt = tf.train.latest_checkpoint(args.model_dir)
-      assert ckpt, "Invalid model checkpoint path: {}".format(args.model_dir)
+      if not ckpt:
+        raise ValueError("Invalid model checkpoint path: {}".format(args.model_dir))
       logging.info("===== restoring from checkpoint: {}".format(ckpt + ".meta"))
       saver = tf.train.import_meta_graph(ckpt + ".meta", clear_devices=True)
       saver.restore(sess, ckpt)
     else:
-      raise Exception("Inferencing requires either --model_dir or --export_dir argument")
+      raise ValueError("Inferencing requires either --model_dir or --export_dir argument")
     global_sess = sess
     global_args = args
 
@@ -575,7 +579,8 @@ def _run_model_tf1(iterator, args, tf_args):
     outputs = sess.run(output_tensors, feed_dict=inputs_feed_dict)
     lengths = [len(output) for output in outputs]
     input_size = len(tensors[0])
-    assert all([length == input_size for length in lengths]), "Output array sizes {} must match input size: {}".format(lengths, input_size)
+    if not all([length == input_size for length in lengths]):
+      raise Exception("Output array sizes {} must match input size: {}".format(lengths, input_size))
     python_outputs = [output.tolist() for output in outputs]      # convert from numpy to standard python types
     result.extend(zip(*python_outputs))                           # convert to an array of tuples of "output columns"
 
@@ -597,7 +602,8 @@ def _run_model_tf2(iterator, args, tf_args):
 
   if not pred_fn or args != global_args:
     # cache pred_fn to avoid reloading model for each partition
-    assert args.export_dir, "Inferencing requires --export_dir argument"
+    if not args.export_dir:
+      raise ValueError("Inferencing requires --export_dir argument")
     logger.info("===== loading saved_model from: {}".format(args.export_dir))
     global_model = tf.saved_model.load(args.export_dir, tags=args.tag_set)
     logger.info("===== signature_def_key: {}".format(args.signature_def_key))
@@ -633,7 +639,8 @@ def _run_model_tf2(iterator, args, tf_args):
     output_sizes = [len(v) for k, v in outputs.items()]
 
     input_size = len(tensors[0])
-    assert all([osize == input_size for osize in output_sizes]), "Output array sizes {} must match input size: {}".format(output_sizes, input_size)
+    if not all([osize == input_size for osize in output_sizes]):
+      raise Exception("Output array sizes {} must match input size: {}".format(output_sizes, input_size))
 
     # convert to standard python types
     python_outputs = [v.numpy().tolist() for k, v in outputs.items()]

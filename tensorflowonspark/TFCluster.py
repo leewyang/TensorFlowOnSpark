@@ -76,9 +76,12 @@ class TFCluster(object):
       :qname: *INTERNAL USE*.
     """
     logger.info("Feeding training data")
-    assert self.input_mode == InputMode.SPARK, "TFCluster.train() requires InputMode.SPARK"
-    assert qname in self.queues, "Unknown queue: {}".format(qname)
-    assert num_epochs >= 0, "num_epochs cannot be negative"
+    if self.input_mode != InputMode.SPARK:
+      raise ValueError("TFCluster.train() requires InputMode.SPARK")
+    if qname not in self.queues:
+      raise ValueError("Unknown queue: {}".format(qname))
+    if num_epochs < 0:
+      raise ValueError("num_epochs cannot be negative")
 
     if isinstance(dataRDD, DStream):
       # Spark Streaming
@@ -110,8 +113,10 @@ class TFCluster(object):
       A Spark RDD representing the output of the TensorFlow inferencing
     """
     logger.info("Feeding inference data")
-    assert self.input_mode == InputMode.SPARK, "TFCluster.inference() requires InputMode.SPARK"
-    assert qname in self.queues, "Unknown queue: {}".format(qname)
+    if self.input_mode != InputMode.SPARK:
+      raise ValueError("TFCluster.train() requires InputMode.SPARK")
+    if qname not in self.queues:
+      raise ValueError("Unknown queue: {}".format(qname))
     return dataRDD.mapPartitions(TFSparkNode.inference(self.cluster_info, feed_timeout=feed_timeout, qname=qname))
 
   def shutdown(self, ssc=None, grace_secs=0, timeout=259200):
@@ -249,8 +254,10 @@ def run(sc, map_fun, tf_args, num_executors, num_ps, tensorboard=False, input_mo
   num_workers = max(num_executors - num_ps - num_eval - num_master, 0)
   total_nodes = num_ps + num_master + num_eval + num_workers
 
-  assert total_nodes == num_executors, "TensorFlow cluster requires {} nodes, but only {} executors available".format(total_nodes, num_executors)
-  assert num_master + num_workers > 0, "TensorFlow cluster requires at least one worker or master/chief node"
+  if total_nodes != num_executors:
+    raise Exception("TensorFlow cluster requires {} nodes, but only {} executors available".format(total_nodes, num_executors))
+  if num_master + num_workers == 0:
+    raise Exception("TensorFlow cluster requires at least one worker or master/chief node")
 
   # create a cluster template for scheduling TF nodes onto executors
   executors = list(range(num_executors))
